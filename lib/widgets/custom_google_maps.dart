@@ -11,6 +11,7 @@ class CustomGoogleMaps extends StatefulWidget {
 class _CustomGoogleMapsState extends State<CustomGoogleMaps> {
   late CameraPosition initialCameraPosition;
   late CameraTargetBounds cameraTargetBounds;
+  late GoogleMapController googleMapController ;
 
   @override
   void initState() {
@@ -21,9 +22,29 @@ class _CustomGoogleMapsState extends State<CustomGoogleMaps> {
 
   @override
   Widget build(BuildContext context) {
-    return GoogleMap(
-        cameraTargetBounds: cameraTargetBounds,
-        initialCameraPosition: initialCameraPosition);
+    return Stack(
+      children: [
+        GoogleMap(
+            onMapCreated: (controller){
+              googleMapController = controller ;
+            },
+            cameraTargetBounds: cameraTargetBounds,
+            initialCameraPosition: initialCameraPosition),
+        Positioned(
+          bottom: 16,
+          right: 16,
+          left: 16,
+          child: FloatingActionButton(
+              child: const Text('Change Location'),
+              onPressed: (){
+                googleMapController.animateCamera(CameraUpdate.newLatLng(LatLng(30.809448713427088, 29.118278000285414)));
+                setState(() {
+
+                });
+              }),
+        )
+      ]
+    );
   }
 
 
@@ -46,3 +67,6 @@ class _CustomGoogleMapsState extends State<CustomGoogleMaps> {
         ));
   }
 }
+
+
+// 30.809448713427088, 29.118278000285414
