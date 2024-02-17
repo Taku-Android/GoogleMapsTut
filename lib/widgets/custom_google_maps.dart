@@ -27,13 +27,13 @@ class _CustomGoogleMapsState extends State<CustomGoogleMaps> {
       extendBodyBehindAppBar: true,
       drawer: CustomDrawer(
         onNormalTap: () {
-          changeMapStyleToRetro(style: 'assets/map_styles/normal.json');
+          changeMapStyle(style: 'assets/map_styles/normal.json');
         },
         onRetroTap: () {
-          changeMapStyleToRetro(style: 'assets/map_styles/retro_style.json');
+          changeMapStyle(style: 'assets/map_styles/retro_style.json');
         },
         onNightTap: () {
-          changeMapStyleToRetro(style: 'assets/map_styles/night_style.json');
+          changeMapStyle(style: 'assets/map_styles/night_style.json');
         },
       ),
       appBar: AppBar(
@@ -85,7 +85,7 @@ class _CustomGoogleMapsState extends State<CustomGoogleMaps> {
     setState(() {});
   }
 
-  changeMapStyleToRetro({required String style}) async {
+  changeMapStyle({required String style}) async {
     var retroStyle = await DefaultAssetBundle.of(context).loadString(style);
     googleMapController.setMapStyle(retroStyle);
   }
