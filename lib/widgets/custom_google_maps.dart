@@ -1,6 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_tut/model/place_model.dart';
 import 'package:google_maps_tut/widgets/custom_drawer.dart';
+import 'dart:ui' as ui;
 
 class CustomGoogleMaps extends StatefulWidget {
   const CustomGoogleMaps({super.key});
@@ -13,12 +18,14 @@ class _CustomGoogleMapsState extends State<CustomGoogleMaps> {
   late CameraPosition initialCameraPosition;
   late CameraTargetBounds cameraTargetBounds;
   late GoogleMapController googleMapController;
+  Set<Marker> markers = {};
 
   @override
   void initState() {
     super.initState();
     initCameraPosition();
     initCameraBounds();
+    initMarker();
   }
 
   @override
@@ -41,7 +48,8 @@ class _CustomGoogleMapsState extends State<CustomGoogleMaps> {
         backgroundColor: Colors.transparent,
       ),
       body: Stack(children: [
-        GoogleMap(
+        GoogleMap(zoomControlsEnabled: false,
+            markers: markers,
             onMapCreated: (controller) {
               googleMapController = controller;
             },
@@ -68,7 +76,7 @@ class _CustomGoogleMapsState extends State<CustomGoogleMaps> {
         // city view 10 -> 13
         // street view 14 -> 17  --- recommended
         // building view 18 -> 20
-        zoom: 10.0,
+        zoom: 13.0,
         target: LatLng(31.2068347767131, 29.921081125421022));
   }
 
@@ -88,6 +96,41 @@ class _CustomGoogleMapsState extends State<CustomGoogleMaps> {
   changeMapStyle({required String style}) async {
     var retroStyle = await DefaultAssetBundle.of(context).loadString(style);
     googleMapController.setMapStyle(retroStyle);
+  }
+
+  Future<Uint8List> getImageFromRawData(String image, int width) async {
+    ByteData imageData = await rootBundle.load(image);
+    ui.Codec imageCodec = await ui.instantiateImageCodec(
+        imageData.buffer.asUint8List(),
+        targetWidth: width);
+    ui.FrameInfo imageFrame = await imageCodec.getNextFrame();
+
+    ByteData? imageByteData =
+        await imageFrame.image.toByteData(format: ui.ImageByteFormat.png);
+
+    return imageByteData!.buffer.asUint8List();
+  }
+
+  void initMarker() async {
+    // var myCustomMarkerIcon = await BitmapDescriptor.fromAssetImage(
+    //     const ImageConfiguration(size: Size(5, 5)),
+    //     'assets/images/location.png');
+    var myCustomMarkerIcon = BitmapDescriptor.fromBytes( await getImageFromRawData('assets/images/location.png', 100));
+    var myMarkers = places
+        .map(
+          (placeModel) => Marker(
+            icon: myCustomMarkerIcon,
+            infoWindow: InfoWindow(title: placeModel.name),
+            position: placeModel.latLng,
+            markerId: MarkerId(
+              placeModel.id.toString(),
+            ),
+          ),
+        )
+        .toSet();
+    markers.addAll(myMarkers);
+
+    setState(() {});
   }
 }
 
