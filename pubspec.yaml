@@ -15,6 +15,7 @@ dependencies:
     sdk: flutter
 
   google_maps_flutter: ^2.5.3
+  location: ^5.0.3
   cupertino_icons: ^1.0.2
 
 dev_dependencies:
@@ -29,9 +30,11 @@ flutter:
 
   uses-material-design: true
 
-#  assets:
-#    - assets/images/
-#    - assets/map_styles/
+  assets:
+    - assets/map_styles/retro_style.json
+    - assets/map_styles/normal.json
+    - assets/map_styles/night_style.json
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
