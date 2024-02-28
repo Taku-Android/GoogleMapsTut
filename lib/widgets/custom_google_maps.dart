@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -19,6 +17,9 @@ class _CustomGoogleMapsState extends State<CustomGoogleMaps> {
   late CameraTargetBounds cameraTargetBounds;
   late GoogleMapController googleMapController;
   Set<Marker> markers = {};
+  Set<Polyline> polyLines = {};
+  Set<Polygon> polygons = {};
+  Set<Circle> circles = {};
 
   @override
   void initState() {
@@ -26,6 +27,9 @@ class _CustomGoogleMapsState extends State<CustomGoogleMaps> {
     initCameraPosition();
     initCameraBounds();
     initMarker();
+    initPolyLines();
+    initPolygons();
+    initCircle();
   }
 
   @override
@@ -48,7 +52,11 @@ class _CustomGoogleMapsState extends State<CustomGoogleMaps> {
         backgroundColor: Colors.transparent,
       ),
       body: Stack(children: [
-        GoogleMap(zoomControlsEnabled: false,
+        GoogleMap(
+          circles: circles,
+          polygons: polygons ,
+            polylines: polyLines,
+            zoomControlsEnabled: false,
             markers: markers,
             onMapCreated: (controller) {
               googleMapController = controller;
@@ -132,6 +140,47 @@ class _CustomGoogleMapsState extends State<CustomGoogleMaps> {
 
     setState(() {});
   }
-}
 
-// 30.809448713427088, 29.118278000285414
+  void initPolyLines() {
+    Polyline polyline = const Polyline(polylineId: PolylineId('1') ,
+      color: Colors.green,
+      width: 5,
+      startCap: Cap.roundCap,
+      patterns: [PatternItem.dot],
+      points: [
+        LatLng(31.232110612952468, 29.946100789340026) ,
+        LatLng(31.220000217871803, 29.941729018669385) ,
+        LatLng(31.246114612685993, 29.966297139036257) ,
+        LatLng(31.25611619866536, 29.990003220491054) ,
+      ],
+    );
+
+    polyLines.add(polyline);
+
+  }
+
+  void initPolygons() {
+    Polygon polygon =  Polygon(polygonId: const PolygonId('1') ,
+      fillColor: Colors.black.withOpacity(0.2),
+      strokeWidth: 5,
+      points: const [
+        LatLng(31.220000217871803, 29.941729018669385) ,
+        LatLng(31.25611619866536, 29.990003220491054) ,
+        LatLng(31.21255089602546, 29.992310097388717)
+      ],
+    );
+
+    polygons.add(polygon);
+
+  }
+
+  void initCircle() {
+    Circle carrefourCityLight = const Circle(circleId: CircleId('1') ,
+    center: LatLng(31.248422915080603, 29.99422963183022),
+      radius: 2000 ,
+      strokeWidth: 3
+    );
+
+    circles.add(carrefourCityLight);
+  }
+}
