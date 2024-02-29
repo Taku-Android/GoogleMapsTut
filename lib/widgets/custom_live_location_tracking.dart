@@ -1,27 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_tut/utils/location_service.dart';
 import 'package:location/location.dart';
 
 class CustomLiveLocationTracking extends StatefulWidget {
   const CustomLiveLocationTracking({super.key});
 
   @override
-  State<CustomLiveLocationTracking> createState() => _CustomLiveLocationTrackingState();
+  State<CustomLiveLocationTracking> createState() =>
+      _CustomLiveLocationTrackingState();
 }
 
-class _CustomLiveLocationTrackingState extends State<CustomLiveLocationTracking> {
+class _CustomLiveLocationTrackingState
+    extends State<CustomLiveLocationTracking> {
   late CameraPosition initialCameraPosition;
   GoogleMapController? googleMapController;
-  late Location location ;
+  late LocationService locationService;
+
   Set<Marker> markers = {};
-
-
 
   @override
   void initState() {
     super.initState();
     initCameraPosition();
-    location = Location();
+    locationService = LocationService();
     updateLocation();
   }
 
@@ -45,61 +47,48 @@ class _CustomLiveLocationTrackingState extends State<CustomLiveLocationTracking>
         // city view 10 -> 13
         // street view 14 -> 17  --- recommended
         // building view 18 -> 20
-        zoom: 13.0,
+        zoom: 5.0,
         target: LatLng(31.2068347767131, 29.921081125421022));
   }
 
-  Future<void> checkAndRequestLocationService() async {
-    var isServiceEnabled = await location.serviceEnabled();
-    if(!isServiceEnabled){
-      isServiceEnabled = await location.requestService();
-      if(!isServiceEnabled){
-        // if he denied the service
-      }
-    }
-    checkAndRequestLocationPermission();
-  }
-
-  Future<bool> checkAndRequestLocationPermission() async {
-    var permissionStatus = await location.hasPermission();
-    if(permissionStatus == PermissionStatus.deniedForever){
-      return false ;
-    }
-    if(permissionStatus == PermissionStatus.denied){
-      permissionStatus = await location.requestPermission();
-      if(permissionStatus != PermissionStatus.granted){
-        return false ;
-      }
-    }
-    return true ;
-  }
-
-  void getLocationData(){
-    location.changeSettings(
-      distanceFilter: 3
-    );
-    location.onLocationChanged.listen((locationData) {
-
-      var cameraPosition = CameraPosition(target: LatLng(locationData.latitude! , locationData.longitude!) , zoom: 17);
-      var myLocationMarker = Marker(markerId: const MarkerId('myLocationMarkerId') ,
-      position: LatLng(locationData.latitude! , locationData.longitude!)
-      );
-      markers.add(myLocationMarker);
-      setState(() {
-
+  void updateLocation() async {
+    await locationService.checkAndRequestLocationService();
+    var hasPermissions =
+        await locationService.checkAndRequestLocationPermission();
+    if (hasPermissions) {
+      locationService.location.changeSettings(distanceFilter: 2);
+      locationService.getRealTimeLocationData((locationData) {
+        setLocationMarker(locationData);
+        setCameraPosition(locationData);
       });
-      googleMapController?.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
-    });
-  }
-
-  void updateLocation()async{
-    await checkAndRequestLocationService();
-    var hasPermissions = await checkAndRequestLocationPermission();
-    if(hasPermissions){
-      getLocationData();
     }
   }
 
+  bool isFirstCall = true ;
+  void setCameraPosition(LocationData locationData) {
+    if(isFirstCall){
+      var cameraPosition = CameraPosition(target: LatLng(locationData.latitude!, locationData.longitude!) , zoom: 15);
+      googleMapController
+          ?.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+
+      setState(() {
+        isFirstCall = false ;
+      });
+
+    }else{
+      googleMapController
+          ?.animateCamera(CameraUpdate.newLatLng(LatLng(locationData.latitude!, locationData.longitude!)));
+
+    }
+  }
+
+  void setLocationMarker(LocationData locationData) {
+    var myLocationMarker = Marker(
+        markerId: const MarkerId('myLocationMarkerId'),
+        position: LatLng(locationData.latitude!, locationData.longitude!));
+    markers.add(myLocationMarker);
+    setState(() {});
+  }
 }
 
 /**
@@ -112,4 +101,3 @@ class _CustomLiveLocationTrackingState extends State<CustomLiveLocationTracking>
  * 4- display
  *
  */
-
