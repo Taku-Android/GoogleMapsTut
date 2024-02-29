@@ -13,6 +13,8 @@ class _CustomLiveLocationTrackingState extends State<CustomLiveLocationTracking>
   late CameraPosition initialCameraPosition;
   GoogleMapController? googleMapController;
   late Location location ;
+  Set<Marker> markers = {};
+
 
 
   @override
@@ -26,15 +28,13 @@ class _CustomLiveLocationTrackingState extends State<CustomLiveLocationTracking>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(children: [
-        GoogleMap(
-            zoomControlsEnabled: false,
-            onMapCreated: (controller) {
-              googleMapController = controller;
-            },
-            initialCameraPosition: initialCameraPosition),
-
-      ]),
+      body: GoogleMap(
+          zoomControlsEnabled: false,
+          markers: markers,
+          onMapCreated: (controller) {
+            googleMapController = controller;
+          },
+          initialCameraPosition: initialCameraPosition),
     );
   }
 
@@ -75,9 +75,19 @@ class _CustomLiveLocationTrackingState extends State<CustomLiveLocationTracking>
   }
 
   void getLocationData(){
+    location.changeSettings(
+      distanceFilter: 3
+    );
     location.onLocationChanged.listen((locationData) {
 
-      var cameraPosition = CameraPosition(target: LatLng(locationData.latitude! , locationData.longitude!));
+      var cameraPosition = CameraPosition(target: LatLng(locationData.latitude! , locationData.longitude!) , zoom: 17);
+      var myLocationMarker = Marker(markerId: const MarkerId('myLocationMarkerId') ,
+      position: LatLng(locationData.latitude! , locationData.longitude!)
+      );
+      markers.add(myLocationMarker);
+      setState(() {
+
+      });
       googleMapController?.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
     });
   }
@@ -89,7 +99,6 @@ class _CustomLiveLocationTrackingState extends State<CustomLiveLocationTracking>
       getLocationData();
     }
   }
-
 
 }
 
